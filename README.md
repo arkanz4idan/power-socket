@@ -6,7 +6,7 @@ A modular, keyboard-driven terminal client for local and remote AI services.
 
 Early development (0.2.0). The project has a Textual interface, profile and JSONL
 conversation storage, provider adapters for Ollama and OpenAI-compatible servers,
-and a local-only, manually confirmed dataset export command.
+and an opt-in, manually confirmed dataset export with optional Google Drive upload.
 
 ## Requirements
 
@@ -61,7 +61,7 @@ Use arrow keys and Enter to select profiles and chats.
 - `profiles.jsonl` is the required profile database filename.
 - `data/chats/*.jsonl` stores conversations as one input/output pair per line.
 - `data/memory/<profile>.md` stores profile-specific memory.
-- `settings.json` controls explicit dataset export.
+- `settings.json` controls explicit dataset export and redaction. Google OAuth credentials are stored separately.
 
 Profiles share the chat collection. Only one profile is active at a time.
 Memory is kept separate by profile. Memory files are read-only context for the
@@ -87,7 +87,7 @@ may bridge to a native library, a local process, or a network service, so no
 universal transport is forced. See `adapters/README.md` for the entry-point
 declaration format.
 
-## Dataset export and privacy
+## Dataset export and Google Drive upload
 
 Export is disabled by default in `settings.json`:
 
@@ -100,10 +100,17 @@ Export is disabled by default in `settings.json`:
 }
 ```
 
-To prepare an export, manually set `dataset_export_enabled` to `true` and list
-the exact chat names in `selected_chats` and/or relative folder names in
-`selected_folders`. Folder selections include their nested `.jsonl` chat files.
-Every folder component and filename in the archive is anonymized. Then run:
+Configure dataset export interactively with:
+
+```powershell
+.\.venv\Scripts\python.exe -m cavde_connect settings
+```
+
+The settings menu lets you enable or disable export, select individual JSONL
+chats or folders, and manage custom redaction terms. Folder selections include
+their nested `.jsonl` chat files. You can still edit `settings.json` manually if
+preferred. Every folder component and filename in the archive is anonymized.
+Then run:
 
 ```powershell
 .\.venv\Scripts\python.exe -m cavde_connect export
@@ -111,10 +118,48 @@ Every folder component and filename in the archive is anonymized. Then run:
 
 The program previews the exact selected files and estimates content
 redactions before requiring the exact confirmation `EXPORT`. It creates a local
-`.tar.xz` archive in `exports/`; it never uploads or sends anything. Archive
-entry names are twelve-character salted-hash fragments derived using fresh
-random UUIDs, with collisions checked within each archive. Tar ownership,
-permissions, and timestamps are normalized.
+`.tar.xz` archive in `exports/`. Nothing is transmitted by the normal export
+command.
+
+### Google Drive OAuth setup (developer configuration)
+
+Power Socket uses Google's **installed desktop app OAuth flow** and the
+limited `drive.file` scope. Each user signs in with their own Google account;
+the uploaded archive is created in that user's Drive. The app does not use a
+shared upload token or the developer's Drive.
+
+For local development:
+
+1. In Google Cloud Console, create/select a project and enable the **Google Drive API**.
+2. Configure the OAuth consent screen and add your Google account as a test user while the app is in Testing.
+3. Create an OAuth client ID with application type **Desktop app**.
+4. Download its JSON and place it at the project root as `client_secret.json`.
+   This filename is ignored by Git. Alternatively set
+   `POWER_SOCKET_GOOGLE_OAUTH_CLIENT_FILE` to its path.
+5. Install dependencies with `python -m pip install -r requirements.txt`.
+
+The OAuth client configuration is app-wide developer configuration, not a
+per-user API key. Do not commit the downloaded JSON to the repository. Before
+distributing Power Socket publicly, configure the OAuth consent screen for the
+intended audience and complete Google's verification requirements if required.
+While the consent screen is in Testing, only listed test users can authorize it.
+
+To create the archive and then explicitly upload it:
+
+```powershell
+.\.venv\Scripts\python.exe -m cavde_connect export --upload
+```
+
+Power Socket first asks for `EXPORT` to create the local archive, then separately
+asks for `UPLOAD`. It opens the user's browser for Google sign-in the first time;
+subsequent uploads reuse the local refresh token and refresh access automatically.
+The token is stored under the user's OS application-data directory, outside the
+project and Git repository. The upload uses the Drive API's resumable upload
+mechanism and creates one archive file in the signed-in user's Drive.
+
+To revoke the app's access, remove Power Socket from the connected apps in the
+Google Account security settings. Deleting the local token file also signs the
+local installation out, but does not revoke Google's grant by itself.
 
 Exported JSONL copies automatically redact common email addresses, phone
 numbers, IPv4 addresses, common API-token formats, and Bearer tokens. Add
@@ -134,7 +179,7 @@ Custom terms are matched case-insensitively as literal substrings and
 replaced with `[REDACTED:custom]`; choose distinctive terms to avoid
 over-redacting. Redaction only affects the exported copy; original chats remain
 unchanged. Malformed JSONL is rejected and partial archives are removed.
-Exports are limited to 100 files and 50 MiB.
+Exports are limited to 100 files and 50 MiB of source/redacted data.
 
 **Important:** automatic redaction is best-effort, not a guarantee. It cannot
 reliably recognize every person's name, school, location, or secret. Review the
@@ -144,4 +189,5 @@ redaction preview and inspect the resulting archive before sharing it.
 
 The app does not launch local model servers, download models, benchmark hardware,
 or scan disks. Network calls happen only when the user sends a message through a
-configured provider. Export is manually initiated and size-limited.
+configured provider or explicitly confirms a Google Drive upload. Dataset export
+and upload are manually initiated and size-limited.

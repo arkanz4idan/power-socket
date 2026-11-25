@@ -8,7 +8,7 @@ version = "0.2.0"
 description = "A universal terminal client for local and remote AI services."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["textual==8.2.7"]
+dependencies = ["textual==8.2.7", "google-api-python-client>=2.160,<3", "google-auth-oauthlib>=1.2,<2"]
 
 [project.scripts]
 power-socket = "cavde_connect.__main__:cli"
