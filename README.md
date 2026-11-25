@@ -31,6 +31,20 @@ cd D:\cavde.connect
 
 Or double-click `RUN-WINDOWS.bat`.
 
+## Run on Linux and macOS
+
+Make the launcher executable once, then run it:
+
+```bash
+chmod +x RUN-LINUXNMACOS.sh
+./RUN-LINUXNMACOS.sh
+```
+
+The script requires Python 3.10 or newer. On first launch, it creates `.venv`
+and installs the dependencies from `requirements.txt`. Later launches reuse that
+environment. You can pass CLI commands through the script, for example
+`./RUN-LINUXNMACOS.sh settings`.
+
 To create the environment on another Windows machine:
 
 ```powershell
