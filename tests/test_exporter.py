@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from cavde_connect.exporter import (
+from power_socket.exporter import (
     ExportError, create_selected_export, load_export_settings,
     preview_export_redactions, preview_selected_export,
 )

@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from cavde_connect.settings_cli import run_settings_menu
+from power_socket.settings_cli import run_settings_menu
 
 
 class SettingsCliTests(unittest.TestCase):

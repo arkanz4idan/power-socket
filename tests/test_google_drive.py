@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from cavde_connect.google_drive import (
+from power_socket.google_drive import (
     DriveUploadError,
     _validate_client_file,
     default_token_path,
@@ -37,7 +37,7 @@ class GoogleDriveConfigTests(unittest.TestCase):
                 _validate_client_file(Path(temp) / "missing.json")
 
     def test_windows_token_path_is_outside_project(self):
-        with patch("cavde_connect.google_drive.os.name", "nt"), patch.dict(
+        with patch("power_socket.google_drive.os.name", "nt"), patch.dict(
             os.environ, {"APPDATA": "C:/Users/test/AppData/Roaming"}
         ):
             path = default_token_path()

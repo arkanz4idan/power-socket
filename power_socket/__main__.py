@@ -52,14 +52,14 @@ def cli() -> None:
             raise SystemExit(2)
         settings = load_export_settings(settings_path)
         if settings["dataset_export_enabled"] is not True:
-            print("Dataset export is DISABLED. Run 'python -m cavde_connect settings' to enable it.")
+            print("Dataset export is DISABLED. Run 'python -m power_socket settings' to enable it.")
             raise SystemExit(2)
 
         selected = settings.get("selected_chats", [])
         folders = settings.get("selected_folders", [])
         if not selected and not folders:
             print("No chats or folders selected.")
-            print("Run 'python -m cavde_connect settings' to choose JSONL files or folders.")
+            print("Run 'python -m power_socket settings' to choose JSONL files or folders.")
             raise SystemExit(2)
 
         print("Selected chats:")

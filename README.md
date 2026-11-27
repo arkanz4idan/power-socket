@@ -25,8 +25,8 @@ No C/C++ or Rust compiler is required for the current Python application.
 ## Run on Windows
 
 ```powershell
-cd D:\cavde.connect
-.\.venv\Scripts\python.exe -m cavde_connect
+Open PowerShell in the Power Socket project directory, then run:
+.\.venv\Scripts\python.exe -m power_socket
 ```
 
 Or double-click `RUN-WINDOWS.bat`.
@@ -52,34 +52,73 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-## Keyboard shortcuts
+## Navigation
 
-| Shortcut | Action |
+Use the **Menu** button to open the main navigation. The Chat section contains
+conversation management actions (open, rename, delete, and refresh). Create a
+new conversation directly from the main menu. Profile selection, creation,
+editing, deletion, and provider configuration are grouped under
+**Settings → Profiles**.
+
+The composer is multiline: press **Enter** to send a message and
+**Shift+Enter** to insert a new line. The new-conversation dialog has **Back**
+and **Continue** actions. Menus use safe internal item IDs and include Back.
+
+### Slash commands
+
+Enter commands directly in the chat composer. They are local UI actions and are
+never sent to the AI. Quote names containing spaces.
+
+| Command | Action |
 |---|---|
-| Ctrl+N | New chat |
-| Ctrl+M | Rename active chat |
-| Ctrl+D | Delete active chat (confirmation required) |
-| Ctrl+Shift+P | Create profile |
-| Ctrl+Shift+X | Delete active profile (confirmation required; memory file is retained) |
-| Ctrl+E | Edit active profile |
-| Ctrl+Shift+M | Open active profile memory in the system editor |
-| Ctrl+L | Load available models from the active provider |
-| Ctrl+P | Focus profile list |
-| Ctrl+R | Refresh chat list |
-| Ctrl+Q | Quit |
+| `/chat new <name>` | Create a conversation |
+| `/chat rename <new name>` | Rename the current conversation |
+| `/chat rename <old name> <new name>` | Rename another conversation |
+| `/chat delete <name>` | Delete a conversation |
+| `/chat open <name>` | Open a conversation |
+| `/chat refresh` | Refresh the conversation list |
+| `/settings profile create <name> <username> <provider> <model> <endpoint> [memory]` | Create a profile; memory defaults to false |
+| `/settings profile change` | Select the active profile |
+| `/settings profile edit <name> <field> <value>` | Edit username, provider, model, endpoint, or memory |
+| `/settings profile delete [name]` | Delete a named profile, or the active one |
+| `/settings profile provider current` | Print active provider ID and endpoint |
+| `/settings profile provider edit <provider> <endpoint>` | Change active provider ID and endpoint |
+| `/model current` | Print the active model |
+| `/model change <model name>` | Set the active model |
+| `/model edit <temperature> <top_p> <top_k> <context_length> <max_tokens> [thinking]` | Set model parameters; use `none` to leave a numeric value unset |
+| `/settings general` | Open general settings |
+| `/settings general export` | Open dataset export settings |
+| `/settings memory` | Open shared Instructions, Memory, and Skills path settings |
+| `/settings export status\|enable\|disable` | Inspect or toggle local dataset export |
+| `/settings context show` | Show shared Instructions, Memory, and Skills paths |
+| `/settings context set <instructions\|memory\|skills> <path>` | Set a shared resource path (quote paths containing spaces) |
+| `/models` | Discover and choose a provider model |
+| `/menu` | Open navigation |
+| `/status` | Show active profile and conversation |
+| `/help` | Show command reference |
+| `/quit` | Exit Power Socket |
 
-Use arrow keys and Enter to select profiles and chats.
+Example:
+`/settings profile create "Coding" "Dev User" ollama qwen3:4b "http://127.0.0.1:11434" false`
+
+For profile editing, valid fields are `username`, `provider`, `model`,
+`endpoint`, and `memory`. The memory value must be true or false. The optional thinking value in
+`/model edit` must also be true or false. Ollama receives the thinking flag;
+OpenAI-compatible adapters currently store it but do not send it.
 
 ## Data
 
 - `profiles.jsonl` is the required profile database filename.
 - `data/chats/*.jsonl` stores conversations as one input/output pair per line.
-- `data/memory/<profile>.md` stores profile-specific memory.
+- `data/memory/<profile>.md` contains legacy profile-specific memory files.
 - `settings.json` controls explicit dataset export and redaction. Google OAuth credentials are stored separately.
 
 Profiles share the chat collection. Only one profile is active at a time.
-Memory is kept separate by profile. Memory files are read-only context for the
-assistant; Power Socket does not silently write chat content into them.
+
+The shared Instructions / Memory / Skills design and AI-approved Memory editing
+are being implemented under `ROADMAP2.md`; the current app still uses the legacy
+per-profile memory behavior until that migration is completed. Existing memory
+files are preserved during the redesign.
 
 The reserved chat name `profiles` is converted to a short salted-hash name so
 it cannot collide with the required `profiles.jsonl` database.
@@ -91,10 +130,10 @@ it cannot collide with the required `profiles.jsonl` database.
   `/v1/chat/completions` endpoint, suitable for llama.cpp server and compatible APIs.
 
 The OpenAI-compatible adapter reads an optional API key from the
-`POWER_SOCKET_API_KEY` environment variable. The legacy `CAVDE_CONNECT_API_KEY` name remains supported. Do not put API keys in profiles.jsonl.
+`POWER_SOCKET_API_KEY` environment variable. Do not put API keys in profiles.jsonl.
 
 Third-party Python packages can register adapters through the
-`cavde_connect.providers` entry-point group. The adapter class must inherit
+`power_socket.providers` entry-point group. The adapter class must inherit
 from `Provider` and implement `generate(model, messages, endpoint)`; optional
 model discovery can be implemented with `list_models(endpoint)`. The adapter
 may bridge to a native library, a local process, or a network service, so no
@@ -117,7 +156,7 @@ Export is disabled by default in `settings.json`:
 Configure dataset export interactively with:
 
 ```powershell
-.\.venv\Scripts\python.exe -m cavde_connect settings
+.\.venv\Scripts\python.exe -m power_socket settings
 ```
 
 The settings menu lets you enable or disable export, select individual JSONL
@@ -127,7 +166,7 @@ preferred. Every folder component and filename in the archive is anonymized.
 Then run:
 
 ```powershell
-.\.venv\Scripts\python.exe -m cavde_connect export
+.\.venv\Scripts\python.exe -m power_socket export
 ```
 
 The program previews the exact selected files and estimates content
@@ -161,7 +200,7 @@ While the consent screen is in Testing, only listed test users can authorize it.
 To create the archive and then explicitly upload it:
 
 ```powershell
-.\.venv\Scripts\python.exe -m cavde_connect export --upload
+.\.venv\Scripts\python.exe -m power_socket export --upload
 ```
 
 Power Socket first asks for `EXPORT` to create the local archive, then separately

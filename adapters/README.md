@@ -3,13 +3,13 @@
 This directory is reserved for optional provider integrations.
 
 The built-in Python provider contract lives in
-`cavde_connect/providers/base.py`. There is no forced transport protocol.
+`power_socket/providers/base.py`. There is no forced transport protocol.
 
 Third-party Python packages can register providers through the
-`cavde_connect.providers` entry-point group. For example, a package can declare:
+`power_socket.providers` entry-point group. For example, a package can declare:
 
 ```toml
-[project.entry-points."cavde_connect.providers"]
+[project.entry-points."power_socket.providers"]
 my-provider = "my_package.adapter:MyProvider"
 ```
 

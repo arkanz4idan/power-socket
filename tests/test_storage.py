@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from cavde_connect.models import Profile
-from cavde_connect.storage import (
+from power_socket.models import Profile
+from power_socket.storage import (
     append_chat_turn, chat_path, delete_chat, load_chat, load_profiles,
     rename_chat, save_profiles, validate_chat_name,
 )
@@ -15,11 +15,22 @@ class StorageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "profiles.jsonl"
             save_profiles(path, [Profile("Default", "User", "ollama", "tiny", False,
-                                         "data/memory/default.md")])
+                                         "data/memory/default.md", model_parameters={"temperature": 0.6})])
             loaded = load_profiles(path)
             self.assertEqual(loaded[0].profilename, "Default")
             self.assertFalse(loaded[0].memory_enabled)
+            self.assertEqual(loaded[0].model_parameters, {"temperature": 0.6})
             self.assertEqual(len(path.read_text(encoding="utf-8").splitlines()), 1)
+
+    def test_legacy_profile_without_model_parameters_loads_with_defaults(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "profiles.jsonl"
+            path.write_text(json.dumps({
+                "Profilename": "Legacy", "Username": "User", "provider": "ollama",
+                "currentmodel": "tiny", "memory": [False, "memory.md"],
+            }) + "\n", encoding="utf-8")
+            loaded = load_profiles(path)
+            self.assertEqual(loaded[0].model_parameters, {})
 
     def test_chat_format_is_cavde_compatible(self):
         with tempfile.TemporaryDirectory() as temp:

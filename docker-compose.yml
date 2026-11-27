@@ -1,7 +1,7 @@
 services:
   ollama:
     image: ollama/ollama:latest
-    container_name: cavde-connect-ollama
+    container_name: power-socket-ollama
     profiles: ["ai"]
     restart: "no"
     init: true

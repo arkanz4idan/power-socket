@@ -54,6 +54,7 @@ def load_profiles(path: Path) -> list[Profile]:
             memory_enabled=memory[0],
             memory_path=str(memory[1]),
             endpoint=str(item.get("endpoint", "http://127.0.0.1:11434")),
+            model_parameters=(item.get("model_parameters", {}) if isinstance(item.get("model_parameters", {}), dict) else {}),
         ))
     return profiles
 
@@ -71,6 +72,7 @@ def save_profiles(path: Path, profiles: list[Profile]) -> None:
                     "currentmodel": profile.currentmodel,
                     "memory": [profile.memory_enabled, profile.memory_path],
                     "endpoint": profile.endpoint,
+                    "model_parameters": profile.model_parameters,
                 }
                 handle.write(json.dumps(item, ensure_ascii=False) + "\n")
         temp.replace(path)

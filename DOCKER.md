@@ -2,7 +2,7 @@
 
 This setup reuses the existing local Ollama container, image, and model
 volume. It does not download models during project setup. The existing
-container is named `cavde-connect-ollama` and is not configured to restart
+container is named `power-socket-ollama` and is not configured to restart
 automatically.
 
 ## Resource safeguards
@@ -18,13 +18,13 @@ automatically.
 From PowerShell:
 
 ```powershell
-docker start cavde-connect-ollama
+docker start power-socket-ollama
 ```
 
 Check available models:
 
 ```powershell
-docker exec cavde-connect-ollama ollama list
+docker exec power-socket-ollama ollama list
 ```
 
 Configure the Default profile in Power Socket:
@@ -36,7 +36,7 @@ Configure the Default profile in Power Socket:
 Stop the container when finished:
 
 ```powershell
-docker stop cavde-connect-ollama
+docker stop power-socket-ollama
 ```
 
 Do not remove the container or use `docker volume rm ollama_ollama_data`:

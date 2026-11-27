@@ -35,4 +35,4 @@ if [[ ! -x "$VENV_PYTHON" ]]; then
 fi
 
 echo "Starting Power Socket..."
-exec "$VENV_PYTHON" -m cavde_connect "$@"
+exec "$VENV_PYTHON" -m power_socket "$@"

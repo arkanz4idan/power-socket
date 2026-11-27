@@ -8,5 +8,5 @@ if not exist ".venv\Scripts\python.exe" (
     pause
     exit /b 1
 )
-".venv\Scripts\python.exe" -m cavde_connect
+".venv\Scripts\python.exe" -m power_socket
 endlocal
